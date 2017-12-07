@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <script src='../dist/differential.js'></script>
+</head>
+
+<body>
+    <div id='test'>
+
+    </div>
+
+    <script>
+        var el = document.getElementById('test');
+        el.style.backgroundColor = 'blue';
+        el.style.width = '100px';
+        el.style.height = '100px';
+
+        D(el, {
+            width: '200px',
+            opacity: '0'
+        }, 1000, 'ease-in-out');
+    </script>
+</body>
+
+</html>
