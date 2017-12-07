@@ -1,7 +1,12 @@
-
 var files = [
+    'init.js',
+    'easings/*.js',
+    'css.js',
+    'animate.js',
     'index.js',
 ];
+
+var dev = true;
 
 function Glob(files) {
     var fs = require('fs')
@@ -170,8 +175,12 @@ files = Glob(files.map((f) => {
     return '// ' + file.replace(__dirname + '/source/', '') + '\n' + fs.readFileSync(file, 'utf8');
 });
 
-var out = '(function (window) {\n' + files.join('') + '})(window)';
+if (dev) {
+    var out = files.join('');
 
+} else {
+    var out = '(function (window) {\n' + files.join('') + '})(window)';
+}
 var version = "0.0.1";
 var today = new Date();
 var dd = today.getDate();
