@@ -6,7 +6,7 @@ var files = [
     'index.js',
 ];
 
-var dev = true;
+var dev = false;
 
 function Glob(files) {
     var fs = require('fs')

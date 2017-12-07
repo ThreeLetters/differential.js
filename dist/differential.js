@@ -8,6 +8,7 @@
  Built on: 07/12/2017
 */
 
+(function (window) {
 // init.js
 var Easings = {},
     Queues = {
@@ -606,3 +607,4 @@ D.addEase = function (name, easing) {
 D.stop = function () {
     Stop = true;
 }
+})(window)
