@@ -1,20 +1,25 @@
 window.D = function D(element, properties, options, options2, callback) {
-    if (options && typeof options !== 'object') {
-        if (typeof options === 'function') {
-            options = {
-                done: options
-            };
-            if (options2) options.duration = options2
-            if (callback) options.easing = callback;
-        } else {
-            options = {
-                duration: options
+
+    if (typeof element === 'string') {
+        return D[element].apply(Array.from(arguments).slice(1));
+    } else {
+        if (options && typeof options !== 'object') {
+            if (typeof options === 'function') {
+                options = {
+                    done: options
+                };
+                if (options2) options.duration = options2
+                if (callback) options.easing = callback;
+            } else {
+                options = {
+                    duration: options
+                }
+                if (options2) options.easing = options2;
+                if (callback) options.done = callback;
             }
-            if (options2) options.easing = options2;
-            if (callback) options.done = callback;
         }
+        return animate(element, properties, options || {});
     }
-    return animate(element, properties, options || {});
 }
 
 D.addEase = function (name, easing) {
