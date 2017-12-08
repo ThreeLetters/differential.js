@@ -16,11 +16,9 @@ function animate(element, properties, options) {
         var obj = {
             nameJS: getJsString(name),
             nameCSS: getCssString(name),
-            ending: null,
             toValue: null,
             originalValue: null,
             originalValueRaw: null,
-            diffValue: null,
             init: function () {
                 this.originalValueRaw = getProperty(element, this);
                 this.originalValue = parseCSS(this.originalValueRaw);
@@ -52,7 +50,9 @@ function animate(element, properties, options) {
             }
         }
     };
-    Queues[options.queue ? 'main' : 'parrallel'].list.push(Data);
+
+    if (!options.queue) item.options.start();
+    Queues[options.queue ? 'main' : 'parrallel'].list.splice(0, 0, Data);
     Stop = false;
     run();
 }
@@ -80,6 +80,8 @@ function end(item, queueName) {
     } else {
         queue.active = false;
     }
+
+    item.options.done();
 
 }
 
@@ -113,6 +115,7 @@ function run() {
                 if (!Queues[name].active && Queues[name].list.length) {
                     Queues[name].active = Queues[name].list.pop();
                     Queues[name].active.init();
+                    Queues[name].active.options.start();
                 }
                 var item = Queues[name].active;
                 if (item) {

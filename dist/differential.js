@@ -720,8 +720,9 @@ function operate(value, value2, operator) {
 
 function operateCSS(css1, css2, operator) {
     for (var i = 0; i < css2.length; ++i) {
-        if (!css1[i]) throw "Fail";
+        if (!css1[i]) throw 'Fail';
         switch (css2[i][0]) {
+
             case 0: // number
                 css1[i][1] = operate(css1[i][1], css2[i][1], operator);
                 break;
@@ -742,7 +743,10 @@ function operateCSS(css1, css2, operator) {
 
 function setUnitsCSS(css1, css2) {
     for (var i = 0; i < css2.length; ++i) {
-        if (!css1[i]) throw "Fail";
+        if (!css1[i]) {
+            css1[i] = css2[i].slice(0);
+            continue;
+        }
         switch (css2[i][0]) {
             case 0: // number
                 if (css2[i][2])
@@ -831,11 +835,9 @@ function animate(element, properties, options) {
         var obj = {
             nameJS: getJsString(name),
             nameCSS: getCssString(name),
-            ending: null,
             toValue: null,
             originalValue: null,
             originalValueRaw: null,
-            diffValue: null,
             init: function () {
                 this.originalValueRaw = getProperty(element, this);
                 this.originalValue = parseCSS(this.originalValueRaw);
@@ -867,7 +869,9 @@ function animate(element, properties, options) {
             }
         }
     };
-    Queues[options.queue ? 'main' : 'parrallel'].list.push(Data);
+
+    if (!options.queue) item.options.start();
+    Queues[options.queue ? 'main' : 'parrallel'].list.splice(0, 0, Data);
     Stop = false;
     run();
 }
@@ -895,6 +899,8 @@ function end(item, queueName) {
     } else {
         queue.active = false;
     }
+
+    item.options.done();
 
 }
 
@@ -928,6 +934,7 @@ function run() {
                 if (!Queues[name].active && Queues[name].list.length) {
                     Queues[name].active = Queues[name].list.pop();
                     Queues[name].active.init();
+                    Queues[name].active.options.start();
                 }
                 var item = Queues[name].active;
                 if (item) {
@@ -970,7 +977,13 @@ window.D = function D(element, properties, options, options2, callback) {
                 if (callback) options.done = callback;
             }
         }
-        return animate(element, properties, options || {});
+        if (Array.isArray(properties)) {
+            return properties.map((p) => {
+                return animate(element, p, options || {});
+            });
+        } else {
+            return animate(element, properties, options || {});
+        }
     }
 }
 

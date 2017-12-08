@@ -163,8 +163,9 @@ function operate(value, value2, operator) {
 
 function operateCSS(css1, css2, operator) {
     for (var i = 0; i < css2.length; ++i) {
-        if (!css1[i]) throw "Fail";
+        if (!css1[i]) throw 'Fail';
         switch (css2[i][0]) {
+
             case 0: // number
                 css1[i][1] = operate(css1[i][1], css2[i][1], operator);
                 break;
@@ -185,7 +186,10 @@ function operateCSS(css1, css2, operator) {
 
 function setUnitsCSS(css1, css2) {
     for (var i = 0; i < css2.length; ++i) {
-        if (!css1[i]) throw "Fail";
+        if (!css1[i]) {
+            css1[i] = css2[i].slice(0);
+            continue;
+        }
         switch (css2[i][0]) {
             case 0: // number
                 if (css2[i][2])

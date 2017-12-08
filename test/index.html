@@ -17,9 +17,29 @@
         el.style.width = '100px';
         el.style.height = '100px';
 
-        D(el, {
-            backgroundColor: 'rgb(0,0,0)'
-        }, 1000, 'ease-in-out');
+        function an() {
+            D(el, [{
+                    backgroundColor: 'rgb(255,0,0) !important'
+                },
+                {
+                    backgroundColor: 'rgb(0,255,0)'
+                },
+                {
+                    backgroundColor: 'rgb(0,0,255)'
+                },
+                {
+                    backgroundColor: 'rgb(255,0,255)'
+                },
+                {
+                    backgroundColor: 'rgb(0,255,255)'
+                },
+                {
+                    backgroundColor: 'rgb(255,255,0)'
+                }
+            ], 1000, 'ease-in-out', an);
+
+        }
+        an();
     </script>
 </body>
 

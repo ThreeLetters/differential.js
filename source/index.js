@@ -18,7 +18,13 @@ window.D = function D(element, properties, options, options2, callback) {
                 if (callback) options.done = callback;
             }
         }
-        return animate(element, properties, options || {});
+        if (Array.isArray(properties)) {
+            return properties.map((p) => {
+                return animate(element, p, options || {});
+            });
+        } else {
+            return animate(element, properties, options || {});
+        }
     }
 }
 
