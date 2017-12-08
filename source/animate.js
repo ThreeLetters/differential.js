@@ -23,37 +23,16 @@ function animate(element, properties, options) {
             diffValue: null,
             init: function () {
                 this.originalValueRaw = getProperty(element, this);
-                this.originalValue = parseFloat(this.originalValueRaw);
+                this.originalValue = parseCSS(this.originalValueRaw);
+                setUnitsCSS(this.originalValue, this.toValue)
                 if (operator) {
-                    switch (operator) {
-                        case '+':
-                            this.toValue = this.originalValue + this.toValue;
-                            break;
-                        case '-':
-                            this.toValue = this.originalValue - this.toValue;
-                            break;
-                        case '*':
-                            this.toValue = this.originalValue * this.toValue;
-                            break;
-                        case '/':
-                            this.toValue = this.originalValue / this.toValue;
-                            break;
-                        case '^':
-                            this.toValue = Math.pow(this.originalValue, this.toValue);
-                            break;
-                    }
+                    operateCSS(this.originalValue, this.toValue, operator);
                 }
-                this.diffValue = this.toValue - this.originalValue;
-                if (!this.ending.trim()) {
-
-                    this.ending = this.originalValueRaw.substr(this.originalValue.toString().length);
-                }
+                setDiffCSS(this.originalValue, this.toValue);
             }
         }
 
-        var toFloat = parseFloat(property);
-        obj.ending = property.substr(toFloat.toString().length);
-        obj.toValue = toFloat;
+        obj.toValue = parseCSS(property);
 
         if (!options.queue) obj.init();
 
@@ -83,8 +62,7 @@ function step(item, diff) {
     for (var easing in item.properties) {
         var frac = Easings[easing](fraction);
         item.properties[easing].forEach((property) => {
-            var value = property.diffValue * frac + property.originalValue
-            item.element.style[property.nameJS] = value.toString() + property.ending;
+            setCSSFrac(item, property, fraction)
         });
     }
 }
@@ -92,7 +70,7 @@ function step(item, diff) {
 function end(item, queueName) {
     for (var easing in item.properties) {
         item.properties[easing].forEach((property) => {
-            item.element.style[property.nameJS] = property.toValue.toString() + property.ending;
+            setProperty(item.element, property, buildCSS(property.toValue));
         });
     }
     var queue = Queues[queueName]

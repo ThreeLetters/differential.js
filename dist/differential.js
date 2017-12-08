@@ -5,7 +5,7 @@
  License: MIT (https://github.com/ThreeLetters/differential.js/blob/master/LICENSE)
  Source: https://github.com/ThreeLetters/differential.js
  Build: v0.0.1
- Built on: 07/12/2017
+ Built on: 08/12/2017
 */
 
 (function (window) {
@@ -37,6 +37,174 @@ function convertOptions(options) {
         start: options.start || function () {},
         duration: options.duration || 400
     }
+}
+
+
+var Colors = {
+    "aliceblue": "240,248,255",
+    "antiquewhite": "250,235,215",
+    "aquamarine": "127,255,212",
+    "aqua": "0,255,255",
+    "azure": "240,255,255",
+    "beige": "245,245,220",
+    "bisque": "255,228,196",
+    "black": "0,0,0",
+    "blanchedalmond": "255,235,205",
+    "blueviolet": "138,43,226",
+    "blue": "0,0,255",
+    "brown": "165,42,42",
+    "burlywood": "222,184,135",
+    "cadetblue": "95,158,160",
+    "chartreuse": "127,255,0",
+    "chocolate": "210,105,30",
+    "coral": "255,127,80",
+    "cornflowerblue": "100,149,237",
+    "cornsilk": "255,248,220",
+    "crimson": "220,20,60",
+    "cyan": "0,255,255",
+    "darkblue": "0,0,139",
+    "darkcyan": "0,139,139",
+    "darkgoldenrod": "184,134,11",
+    "darkgray": "169,169,169",
+    "darkgrey": "169,169,169",
+    "darkgreen": "0,100,0",
+    "darkkhaki": "189,183,107",
+    "darkmagenta": "139,0,139",
+    "darkolivegreen": "85,107,47",
+    "darkorange": "255,140,0",
+    "darkorchid": "153,50,204",
+    "darkred": "139,0,0",
+    "darksalmon": "233,150,122",
+    "darkseagreen": "143,188,143",
+    "darkslateblue": "72,61,139",
+    "darkslategray": "47,79,79",
+    "darkturquoise": "0,206,209",
+    "darkviolet": "148,0,211",
+    "deeppink": "255,20,147",
+    "deepskyblue": "0,191,255",
+    "dimgray": "105,105,105",
+    "dimgrey": "105,105,105",
+    "dodgerblue": "30,144,255",
+    "firebrick": "178,34,34",
+    "floralwhite": "255,250,240",
+    "forestgreen": "34,139,34",
+    "fuchsia": "255,0,255",
+    "gainsboro": "220,220,220",
+    "ghostwhite": "248,248,255",
+    "gold": "255,215,0",
+    "goldenrod": "218,165,32",
+    "gray": "128,128,128",
+    "grey": "128,128,128",
+    "greenyellow": "173,255,47",
+    "green": "0,128,0",
+    "honeydew": "240,255,240",
+    "hotpink": "255,105,180",
+    "indianred": "205,92,92",
+    "indigo": "75,0,130",
+    "ivory": "255,255,240",
+    "khaki": "240,230,140",
+    "lavenderblush": "255,240,245",
+    "lavender": "230,230,250",
+    "lawngreen": "124,252,0",
+    "lemonchiffon": "255,250,205",
+    "lightblue": "173,216,230",
+    "lightcoral": "240,128,128",
+    "lightcyan": "224,255,255",
+    "lightgoldenrodyellow": "250,250,210",
+    "lightgray": "211,211,211",
+    "lightgrey": "211,211,211",
+    "lightgreen": "144,238,144",
+    "lightpink": "255,182,193",
+    "lightsalmon": "255,160,122",
+    "lightseagreen": "32,178,170",
+    "lightskyblue": "135,206,250",
+    "lightslategray": "119,136,153",
+    "lightsteelblue": "176,196,222",
+    "lightyellow": "255,255,224",
+    "limegreen": "50,205,50",
+    "lime": "0,255,0",
+    "linen": "250,240,230",
+    "magenta": "255,0,255",
+    "maroon": "128,0,0",
+    "mediumaquamarine": "102,205,170",
+    "mediumblue": "0,0,205",
+    "mediumorchid": "186,85,211",
+    "mediumpurple": "147,112,219",
+    "mediumseagreen": "60,179,113",
+    "mediumslateblue": "123,104,238",
+    "mediumspringgreen": "0,250,154",
+    "mediumturquoise": "72,209,204",
+    "mediumvioletred": "199,21,133",
+    "midnightblue": "25,25,112",
+    "mintcream": "245,255,250",
+    "mistyrose": "255,228,225",
+    "moccasin": "255,228,181",
+    "navajowhite": "255,222,173",
+    "navy": "0,0,128",
+    "oldlace": "253,245,230",
+    "olivedrab": "107,142,35",
+    "olive": "128,128,0",
+    "orangered": "255,69,0",
+    "orange": "255,165,0",
+    "orchid": "218,112,214",
+    "palegoldenrod": "238,232,170",
+    "palegreen": "152,251,152",
+    "paleturquoise": "175,238,238",
+    "palevioletred": "219,112,147",
+    "papayawhip": "255,239,213",
+    "peachpuff": "255,218,185",
+    "peru": "205,133,63",
+    "pink": "255,192,203",
+    "plum": "221,160,221",
+    "powderblue": "176,224,230",
+    "purple": "128,0,128",
+    "red": "255,0,0",
+    "rosybrown": "188,143,143",
+    "royalblue": "65,105,225",
+    "saddlebrown": "139,69,19",
+    "salmon": "250,128,114",
+    "sandybrown": "244,164,96",
+    "seagreen": "46,139,87",
+    "seashell": "255,245,238",
+    "sienna": "160,82,45",
+    "silver": "192,192,192",
+    "skyblue": "135,206,235",
+    "slateblue": "106,90,205",
+    "slategray": "112,128,144",
+    "snow": "255,250,250",
+    "springgreen": "0,255,127",
+    "steelblue": "70,130,180",
+    "tan": "210,180,140",
+    "teal": "0,128,128",
+    "thistle": "216,191,216",
+    "tomato": "255,99,71",
+    "turquoise": "64,224,208",
+    "violet": "238,130,238",
+    "wheat": "245,222,179",
+    "whitesmoke": "245,245,245",
+    "white": "255,255,255",
+    "yellowgreen": "154,205,50",
+    "yellow": "255,255,0"
+}
+for (var name in Colors) {
+    Colors[name] = Colors[name].split(',').map((num) => {
+        return parseInt(num)
+    })
+}
+
+function hexToRgb(hex) {
+    // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
+    var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+    hex = hex.replace(shorthandRegex, function (m, r, g, b) {
+        return r + r + g + g + b + b;
+    });
+
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? [
+        parseInt(result[1], 16),
+        parseInt(result[2], 16),
+        parseInt(result[3], 16)
+    ] : null;
 }
 // easings/custom.js
 /*
@@ -387,10 +555,25 @@ function generateStep(steps) {
     };
 }
 // css.js
+var CSSSetHooks = {},
+    CSSGetHooks = {};
+
+
 function getProperty(element, propData) {
+    if (CSSGetHooks[propData.nameJS]) return CSSGetHooks[propData.nameJS](element, propData)
     if (element.style[propData.nameJS]) return element.style[propData.nameJS];
     var styles = window.getComputedStyle(element);
     return styles.getPropertyValue(propData.nameCSS);
+}
+
+function setProperty(element, propData, value) {
+    if (CSSSetHooks[propData.nameJS]) {
+        var dt = CSSSetHooks[propData.nameJS](element, propData, value);
+        if (dt) element.style[dt[0]] = dt[1];
+    } else {
+        element.style[propData.nameJS] = value;
+    }
+    return;
 }
 
 function getCssString(property) {
@@ -409,6 +592,225 @@ function getJsString(name) {
 
 function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+
+function parseCSS(string, obj) {
+    if (!obj) obj = []
+    if (!string) return obj;
+    if (string.charAt(0) === '"') {
+        var match = string.match(/("(?:[^"\\]|\\.)*")(?: (.*))?/);
+        obj.push([3, match[1]]);
+        parseCSS(match[2], obj);
+    } else if (string.charAt(0) === "'") {
+        var match = string.match(/('(?:[^'\\]|\\.)*')(?: (.*))?/);
+        obj.push([3, match[1]]);
+        parseCSS(match[2], obj);
+    } else {
+        var number = string.match(/^([0-9\.]*)(em|ex|%|px|cm|mm|in|pt|pc|ch|rem|vh|vw|vmin|vmax|s|ms)?(?: (.*))?/);
+        if (number[1]) { // number
+            obj.push([0, parseFloat(number[1]), number[2] || '']);
+            parseCSS(number[3], obj);
+        } else {
+            var func = string.match(/^([a-z\-]*?)\(([^\)]*)\)(?: (.*))?/)
+
+            if (func && func[1]) {
+
+                if (func[1] === 'rgb') {
+                    obj.push([2, func[2].split(',').map((arg) => {
+                        return parseInt(arg);
+                    })]);
+                } else {
+                    var args = func[2].split(',').map((arg) => {
+                        return parseCSS(arg);
+                    });
+                    obj.push([1, func[1], args]);
+                }
+                parseCSS(func[3], obj);
+            } else {
+
+                if (string.charAt(0) === '#') {
+                    var results = string.match(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})(?: (.*))?/);
+                    obj.push([2, hexToRgb(results[1])]);
+
+                    parseCSS(results[2], obj);
+                } else {
+                    var res = string.match(/^([a-z\-]*?)(?: (.*))/);
+                    if (res && res[1]) {
+                        if (Colors[res[1]]) {
+                            obj.push([2, Colors[res[1]].slice(0)])
+                        } else {
+                            obj.push([3, res[1]]);
+                        }
+                        parseCSS(res[2], obj);
+                    } else {
+                        if (Colors[string]) {
+                            obj.push([2, Colors[string].slice(0)])
+                        } else {
+                            obj.push([3, string]);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return obj;
+}
+
+function buildCSS(obj) {
+    var out = [];
+
+    function recurse(arr) {
+
+        arr.forEach((property) => {
+            switch (property[0]) {
+                case 0:
+                    out.push(property[1], property[2], ' ')
+                    break;
+                case 1:
+                    out.push(property[1], '(');
+                    property[2].forEach((prop, i) => {
+                        if (i !== 0) out.push(',');
+                        recurse(prop);
+                    })
+                    out.push(')', ' ');
+                    break;
+                case 2:
+                    out.push('rgb(');
+                    property[1].forEach((prop, i) => {
+                        if (i !== 0) out.push(',');
+                        out.push(prop);
+                    })
+                    out.push(')', ' ');
+                    break;
+                case 3:
+                    out.push(property[1], ' ');
+                    break;
+            }
+        })
+    }
+    recurse(obj)
+    out.pop();
+    return out.join('')
+}
+
+function operate(value, value2, operator) {
+    switch (operator) {
+        case '+':
+            return value + value2;
+            break;
+        case '-':
+            return value - value2;
+            break;
+        case '*':
+            return value * value2;
+            break;
+        case '/':
+            return value / value2;
+            break;
+        case '^':
+            return Math.pow(value, value2);
+            break;
+        default:
+            return value;
+            break;
+    }
+
+}
+
+function operateCSS(css1, css2, operator) {
+    for (var i = 0; i < css2.length; ++i) {
+        if (!css1[i]) throw "Fail";
+        switch (css2[i][0]) {
+            case 0: // number
+                css1[i][1] = operate(css1[i][1], css2[i][1], operator);
+                break;
+            case 1: // function
+                operateCSS(css1[i][2], css2[i][2], operator);
+                break;
+            case 2: // color
+                css2[i][1].forEach((prop, ind) => {
+                    css1[i][1][ind] = parseInt(operate(css1[i][1][ind], prop, operator))
+                })
+                break;
+            case 3: // string
+
+                break;
+        }
+    }
+}
+
+function setUnitsCSS(css1, css2) {
+    for (var i = 0; i < css2.length; ++i) {
+        if (!css1[i]) throw "Fail";
+        switch (css2[i][0]) {
+            case 0: // number
+                if (css2[i][2])
+                    css1[i][2] = css2[i][2];
+                break;
+            case 1: // function
+                setUnitsCSS(css1[i][2], css2[i][2]);
+                break;
+        }
+    }
+}
+
+function setDiffCSS(css1, css2) {
+    for (var i = 0; i < css2.length; ++i) {
+        if (!css1[i]) throw "Fail";
+        switch (css2[i][0]) {
+            case 0: // number
+                css1[i][3] = css2[i][1] - css1[i][1];
+                break;
+            case 2: // color
+                css1[i][2] = [];
+                css2[i][1].forEach((prop, ind) => {
+                    css1[i][2][ind] = prop - css1[i][1][ind];
+                })
+                break;
+            case 1: // function
+                setDiffCSS(css1[i][2], css2[i][2]);
+                break;
+        }
+    }
+}
+
+function setCSSFrac(item, property, fraction) {
+    var out = [];
+
+    function recurse(arr) {
+        arr.forEach((property) => {
+            switch (property[0]) {
+                case 0:
+                    out.push(property[1] + property[3] * fraction, property[2], ' ')
+                    break;
+                case 1:
+                    out.push(property[1], '(');
+                    property[2].forEach((prop, i) => {
+                        if (i !== 0) out.push(',');
+                        recurse(prop);
+                    })
+                    out.push(')', ' ');
+                    break;
+                case 2:
+                    out.push('rgb(');
+                    property[1].forEach((prop, i) => {
+                        if (i !== 0) out.push(',');
+                        out.push(parseInt(prop + property[2][i] * fraction));
+                    })
+                    out.push(')', ' ');
+                    break;
+                case 3:
+                    out.push(property[1], ' ');
+                    break;
+            }
+        })
+    }
+    recurse(property.originalValue)
+    out.pop();
+
+    setProperty(item.element, property, out.join(''));
+
 }
 // animate.js
 function animate(element, properties, options) {
@@ -436,37 +838,16 @@ function animate(element, properties, options) {
             diffValue: null,
             init: function () {
                 this.originalValueRaw = getProperty(element, this);
-                this.originalValue = parseFloat(this.originalValueRaw);
+                this.originalValue = parseCSS(this.originalValueRaw);
+                setUnitsCSS(this.originalValue, this.toValue)
                 if (operator) {
-                    switch (operator) {
-                        case '+':
-                            this.toValue = this.originalValue + this.toValue;
-                            break;
-                        case '-':
-                            this.toValue = this.originalValue - this.toValue;
-                            break;
-                        case '*':
-                            this.toValue = this.originalValue * this.toValue;
-                            break;
-                        case '/':
-                            this.toValue = this.originalValue / this.toValue;
-                            break;
-                        case '^':
-                            this.toValue = Math.pow(this.originalValue, this.toValue);
-                            break;
-                    }
+                    operateCSS(this.originalValue, this.toValue, operator);
                 }
-                this.diffValue = this.toValue - this.originalValue;
-                if (!this.ending.trim()) {
-
-                    this.ending = this.originalValueRaw.substr(this.originalValue.toString().length);
-                }
+                setDiffCSS(this.originalValue, this.toValue);
             }
         }
 
-        var toFloat = parseFloat(property);
-        obj.ending = property.substr(toFloat.toString().length);
-        obj.toValue = toFloat;
+        obj.toValue = parseCSS(property);
 
         if (!options.queue) obj.init();
 
@@ -496,8 +877,7 @@ function step(item, diff) {
     for (var easing in item.properties) {
         var frac = Easings[easing](fraction);
         item.properties[easing].forEach((property) => {
-            var value = property.diffValue * frac + property.originalValue
-            item.element.style[property.nameJS] = value.toString() + property.ending;
+            setCSSFrac(item, property, fraction)
         });
     }
 }
@@ -505,7 +885,7 @@ function step(item, diff) {
 function end(item, queueName) {
     for (var easing in item.properties) {
         item.properties[easing].forEach((property) => {
-            item.element.style[property.nameJS] = property.toValue.toString() + property.ending;
+            setProperty(item.element, property, buildCSS(property.toValue));
         });
     }
     var queue = Queues[queueName]
