@@ -19,24 +19,36 @@
 
         function an() {
             D(el, [{
-                    backgroundColor: 'rgb(255,0,0) !important'
+                    backgroundColor: 'rgb(255,0,0)',
+                    border: '20px solid rgb(255,255,0)',
+                    width: '-=30px',
+                    height: '-=30px'
                 },
                 {
-                    backgroundColor: 'rgb(0,255,0)'
+                    backgroundColor: 'rgb(0,255,0)',
+                    border: '5px solid rgb(255,0,0)',
+                    width: '+=30px',
+                    height: '+=30px'
                 },
                 {
-                    backgroundColor: 'rgb(0,0,255)'
+                    backgroundColor: 'rgb(0,0,255)',
+                    borderColor: 'rgb(0,255,0)',
                 },
                 {
-                    backgroundColor: 'rgb(255,0,255)'
+                    backgroundColor: 'rgb(255,0,255)',
+                    border: '20px solid rgb(0,0,255)'
                 },
                 {
-                    backgroundColor: 'rgb(0,255,255)'
+                    backgroundColor: 'rgb(0,255,255)',
+                    border: '5px solid rgb(255,0,255)'
                 },
                 {
-                    backgroundColor: 'rgb(255,255,0)'
+                    backgroundColor: 'rgb(255,255,0)',
+                    borderColor: 'rgb(255,0,255)',
                 }
             ], 1000, 'ease-in-out', an);
+
+
 
         }
         an();

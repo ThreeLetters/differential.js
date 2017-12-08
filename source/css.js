@@ -167,15 +167,24 @@ function operateCSS(css1, css2, operator) {
         switch (css2[i][0]) {
 
             case 0: // number
-                css1[i][1] = operate(css1[i][1], css2[i][1], operator);
+                if (css2[i][3] === false) css2[i][1] = 0;
+                css2[i][1] = operate(css1[i][1], css2[i][1], operator);
                 break;
             case 1: // function
-                operateCSS(css1[i][2], css2[i][2], operator);
+                css2[i][1].forEach((prop, ind) => {
+                    operateCSS(css1[i][2][ind], css2[i][2][ind], operator);
+                });
                 break;
             case 2: // color
-                css2[i][1].forEach((prop, ind) => {
-                    css1[i][1][ind] = parseInt(operate(css1[i][1][ind], prop, operator))
-                })
+                if (css2[i][2] === false) {
+                    css2[i][1].forEach((prop, ind) => {
+                        css2[i][1][ind] = parseInt(operate(0, prop, operator))
+                    })
+                } else {
+                    css2[i][1].forEach((prop, ind) => {
+                        css2[i][1][ind] = parseInt(operate(css1[i][1][ind], prop, operator))
+                    })
+                }
                 break;
             case 3: // string
 
@@ -188,6 +197,7 @@ function setUnitsCSS(css1, css2) {
     for (var i = 0; i < css2.length; ++i) {
         if (!css1[i]) {
             css1[i] = css2[i].slice(0);
+            css1[i].push(false)
             continue;
         }
         switch (css2[i][0]) {
@@ -196,7 +206,10 @@ function setUnitsCSS(css1, css2) {
                     css1[i][2] = css2[i][2];
                 break;
             case 1: // function
-                setUnitsCSS(css1[i][2], css2[i][2]);
+                css2[i][1].forEach((prop, ind) => {
+                    if (!css1[i][2][ind]) css1[i][2][ind] = [];
+                    setUnitsCSS(css1[i][2][ind], css2[i][2][ind]);
+                });
                 break;
         }
     }
@@ -216,7 +229,12 @@ function setDiffCSS(css1, css2) {
                 })
                 break;
             case 1: // function
-                setDiffCSS(css1[i][2], css2[i][2]);
+                css2[i][1].forEach((prop, ind) => {
+                    setDiffCSS(css1[i][2][ind], css2[i][2][ind]);
+                });
+                break;
+            case 3: // string
+                css1[i][1] = css2[i][1];
                 break;
         }
     }

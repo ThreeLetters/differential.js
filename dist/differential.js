@@ -724,15 +724,24 @@ function operateCSS(css1, css2, operator) {
         switch (css2[i][0]) {
 
             case 0: // number
-                css1[i][1] = operate(css1[i][1], css2[i][1], operator);
+                if (css2[i][3] === false) css2[i][1] = 0;
+                css2[i][1] = operate(css1[i][1], css2[i][1], operator);
                 break;
             case 1: // function
-                operateCSS(css1[i][2], css2[i][2], operator);
+                css2[i][1].forEach((prop, ind) => {
+                    operateCSS(css1[i][2][ind], css2[i][2][ind], operator);
+                });
                 break;
             case 2: // color
-                css2[i][1].forEach((prop, ind) => {
-                    css1[i][1][ind] = parseInt(operate(css1[i][1][ind], prop, operator))
-                })
+                if (css2[i][2] === false) {
+                    css2[i][1].forEach((prop, ind) => {
+                        css2[i][1][ind] = parseInt(operate(0, prop, operator))
+                    })
+                } else {
+                    css2[i][1].forEach((prop, ind) => {
+                        css2[i][1][ind] = parseInt(operate(css1[i][1][ind], prop, operator))
+                    })
+                }
                 break;
             case 3: // string
 
@@ -745,6 +754,7 @@ function setUnitsCSS(css1, css2) {
     for (var i = 0; i < css2.length; ++i) {
         if (!css1[i]) {
             css1[i] = css2[i].slice(0);
+            css1[i].push(false)
             continue;
         }
         switch (css2[i][0]) {
@@ -753,7 +763,10 @@ function setUnitsCSS(css1, css2) {
                     css1[i][2] = css2[i][2];
                 break;
             case 1: // function
-                setUnitsCSS(css1[i][2], css2[i][2]);
+                css2[i][1].forEach((prop, ind) => {
+                    if (!css1[i][2][ind]) css1[i][2][ind] = [];
+                    setUnitsCSS(css1[i][2][ind], css2[i][2][ind]);
+                });
                 break;
         }
     }
@@ -773,7 +786,12 @@ function setDiffCSS(css1, css2) {
                 })
                 break;
             case 1: // function
-                setDiffCSS(css1[i][2], css2[i][2]);
+                css2[i][1].forEach((prop, ind) => {
+                    setDiffCSS(css1[i][2][ind], css2[i][2][ind]);
+                });
+                break;
+            case 3: // string
+                css1[i][1] = css2[i][1];
                 break;
         }
     }
@@ -821,40 +839,52 @@ function animate(element, properties, options) {
     options = convertOptions(options);
     var animateProperties = {};
     for (var name in properties) {
-        var property = properties[name];
-        var easing = options.easing;
-        if (typeof property === 'object') {
-            easing = property.easing || options.easing;
-            property = property.value;
-        }
-        var operator = false;
-        if (property.charAt(1) === '=') {
-            operator = property.charAt(0);
-            property = property.substr(2);
-        }
-        var obj = {
-            nameJS: getJsString(name),
-            nameCSS: getCssString(name),
-            toValue: null,
-            originalValue: null,
-            originalValueRaw: null,
-            init: function () {
-                this.originalValueRaw = getProperty(element, this);
-                this.originalValue = parseCSS(this.originalValueRaw);
-                setUnitsCSS(this.originalValue, this.toValue)
-                if (operator) {
-                    operateCSS(this.originalValue, this.toValue, operator);
-                }
-                setDiffCSS(this.originalValue, this.toValue);
+        (function (properties, name) {
+            var property = properties[name];
+            var easing = options.easing;
+            if (typeof property === 'object') {
+                easing = property.easing || options.easing;
+                property = property.value;
             }
-        }
+            var operator = false;
+            if (property.charAt(1) === '=') {
+                operator = property.charAt(0);
+                property = property.substr(2);
+            }
+            var obj = {
+                nameJS: getJsString(name),
+                nameCSS: getCssString(name),
+                toValue: null,
+                toValueRaw: null,
+                originalValue: null,
+                originalValueRaw: null,
+                init: function () {
+                    this.originalValueRaw = getProperty(element, this);
+                    if (!this.originalValueRaw || this.originalValueRaw === this.toValueRaw) {
+                        setProperty(element, this, this.toValueRaw);
+                        return false;
+                    }
+                    //   console.log(this.originalValueRaw)
+                    this.originalValue = parseCSS(this.originalValueRaw);
+                    setUnitsCSS(this.originalValue, this.toValue)
+                    if (operator) {
+                        operateCSS(this.originalValue, this.toValue, operator);
+                        this.toValueRaw = buildCSS(this.toValue);
+                    }
+                    setDiffCSS(this.originalValue, this.toValue);
+                    return true;
+                }
+            }
+            obj.toValueRaw = property;
+            obj.toValue = parseCSS(property);
+            if (!animateProperties[easing]) animateProperties[easing] = [];
 
-        obj.toValue = parseCSS(property);
-
-        if (!options.queue) obj.init();
-
-        if (!animateProperties[easing]) animateProperties[easing] = [];
-        animateProperties[easing].push(obj);
+            if (!options.queue) {
+                if (obj.init()) animateProperties[easing].push(obj);
+            } else {
+                animateProperties[easing].push(obj);
+            }
+        })(properties, name);
     }
     var Data = {
         element: element,
@@ -862,11 +892,16 @@ function animate(element, properties, options) {
         properties: animateProperties,
         duration: options.duration,
         init: function () {
+            var run = false;
             for (var name in animateProperties) {
-                animateProperties[name].forEach((property) => {
-                    property.init();
-                })
+                animateProperties[name] = animateProperties[name].filter((property) => {
+                    if (property.init()) {
+                        run = true;
+                        return true;
+                    } else return false;
+                });
             }
+            return run;
         }
     };
 
@@ -889,7 +924,7 @@ function step(item, diff) {
 function end(item, queueName) {
     for (var easing in item.properties) {
         item.properties[easing].forEach((property) => {
-            setProperty(item.element, property, buildCSS(property.toValue));
+            setProperty(item.element, property, property.toValueRaw);
         });
     }
     var queue = Queues[queueName]
@@ -933,8 +968,12 @@ function run() {
             } else {
                 if (!Queues[name].active && Queues[name].list.length) {
                     Queues[name].active = Queues[name].list.pop();
-                    Queues[name].active.init();
                     Queues[name].active.options.start();
+                    if (!Queues[name].active.init()) {
+                        Queues[name].active = false;
+                        Queues[name].done();
+                    };
+                    stop = false;
                 }
                 var item = Queues[name].active;
                 if (item) {

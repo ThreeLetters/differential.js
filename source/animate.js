@@ -2,40 +2,52 @@ function animate(element, properties, options) {
     options = convertOptions(options);
     var animateProperties = {};
     for (var name in properties) {
-        var property = properties[name];
-        var easing = options.easing;
-        if (typeof property === 'object') {
-            easing = property.easing || options.easing;
-            property = property.value;
-        }
-        var operator = false;
-        if (property.charAt(1) === '=') {
-            operator = property.charAt(0);
-            property = property.substr(2);
-        }
-        var obj = {
-            nameJS: getJsString(name),
-            nameCSS: getCssString(name),
-            toValue: null,
-            originalValue: null,
-            originalValueRaw: null,
-            init: function () {
-                this.originalValueRaw = getProperty(element, this);
-                this.originalValue = parseCSS(this.originalValueRaw);
-                setUnitsCSS(this.originalValue, this.toValue)
-                if (operator) {
-                    operateCSS(this.originalValue, this.toValue, operator);
-                }
-                setDiffCSS(this.originalValue, this.toValue);
+        (function (properties, name) {
+            var property = properties[name];
+            var easing = options.easing;
+            if (typeof property === 'object') {
+                easing = property.easing || options.easing;
+                property = property.value;
             }
-        }
+            var operator = false;
+            if (property.charAt(1) === '=') {
+                operator = property.charAt(0);
+                property = property.substr(2);
+            }
+            var obj = {
+                nameJS: getJsString(name),
+                nameCSS: getCssString(name),
+                toValue: null,
+                toValueRaw: null,
+                originalValue: null,
+                originalValueRaw: null,
+                init: function () {
+                    this.originalValueRaw = getProperty(element, this);
+                    if (!this.originalValueRaw || this.originalValueRaw === this.toValueRaw) {
+                        setProperty(element, this, this.toValueRaw);
+                        return false;
+                    }
+                    //   console.log(this.originalValueRaw)
+                    this.originalValue = parseCSS(this.originalValueRaw);
+                    setUnitsCSS(this.originalValue, this.toValue)
+                    if (operator) {
+                        operateCSS(this.originalValue, this.toValue, operator);
+                        this.toValueRaw = buildCSS(this.toValue);
+                    }
+                    setDiffCSS(this.originalValue, this.toValue);
+                    return true;
+                }
+            }
+            obj.toValueRaw = property;
+            obj.toValue = parseCSS(property);
+            if (!animateProperties[easing]) animateProperties[easing] = [];
 
-        obj.toValue = parseCSS(property);
-
-        if (!options.queue) obj.init();
-
-        if (!animateProperties[easing]) animateProperties[easing] = [];
-        animateProperties[easing].push(obj);
+            if (!options.queue) {
+                if (obj.init()) animateProperties[easing].push(obj);
+            } else {
+                animateProperties[easing].push(obj);
+            }
+        })(properties, name);
     }
     var Data = {
         element: element,
@@ -43,11 +55,16 @@ function animate(element, properties, options) {
         properties: animateProperties,
         duration: options.duration,
         init: function () {
+            var run = false;
             for (var name in animateProperties) {
-                animateProperties[name].forEach((property) => {
-                    property.init();
-                })
+                animateProperties[name] = animateProperties[name].filter((property) => {
+                    if (property.init()) {
+                        run = true;
+                        return true;
+                    } else return false;
+                });
             }
+            return run;
         }
     };
 
@@ -70,7 +87,7 @@ function step(item, diff) {
 function end(item, queueName) {
     for (var easing in item.properties) {
         item.properties[easing].forEach((property) => {
-            setProperty(item.element, property, buildCSS(property.toValue));
+            setProperty(item.element, property, property.toValueRaw);
         });
     }
     var queue = Queues[queueName]
@@ -114,8 +131,12 @@ function run() {
             } else {
                 if (!Queues[name].active && Queues[name].list.length) {
                     Queues[name].active = Queues[name].list.pop();
-                    Queues[name].active.init();
                     Queues[name].active.options.start();
+                    if (!Queues[name].active.init()) {
+                        Queues[name].active = false;
+                        Queues[name].done();
+                    };
+                    stop = false;
                 }
                 var item = Queues[name].active;
                 if (item) {
