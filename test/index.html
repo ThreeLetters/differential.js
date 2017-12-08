@@ -19,24 +19,26 @@
 
         function an() {
             D(el, [{
-                    backgroundColor: 'rgb(255,0,0)',
+                    backgroundColor: 'red',
                     border: '20px solid rgb(255,255,0)',
                     width: '-=30px',
-                    height: '-=30px'
+                    height: '-=30px',
+                    borderRadius: '10px',
                 },
                 {
-                    backgroundColor: 'rgb(0,255,0)',
+                    backgroundColor: 'green',
                     border: '5px solid rgb(255,0,0)',
                     width: '+=30px',
-                    height: '+=30px'
+                    height: '+=30px',
+                    borderRadius: '0px'
                 },
                 {
-                    backgroundColor: 'rgb(0,0,255)',
+                    backgroundColor: 'blue',
                     borderColor: 'rgb(0,255,0)',
                 },
                 {
                     backgroundColor: 'rgb(255,0,255)',
-                    border: '20px solid rgb(0,0,255)'
+                    border: '20px solid blue'
                 },
                 {
                     backgroundColor: 'rgb(0,255,255)',
@@ -52,6 +54,7 @@
 
         }
         an();
+
     </script>
 </body>
 
