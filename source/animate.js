@@ -8,6 +8,7 @@ function animate(element, properties, options) {
                 easing = property.easing || options.easing;
                 property = property.value;
             }
+            property = property.toString();
             var operator = false;
             if (property.charAt(1) === '=') {
                 operator = property.charAt(0);
@@ -36,7 +37,7 @@ function animate(element, properties, options) {
                     return true;
                 }
             }
-            obj.toValueRaw = property.toString();
+            obj.toValueRaw = property;
             obj.toValue = parseCSS(obj.toValueRaw);
             if (!animateProperties[easing]) animateProperties[easing] = [];
 
