@@ -36,8 +36,8 @@ function animate(element, properties, options) {
                     return true;
                 }
             }
-            obj.toValueRaw = property;
-            obj.toValue = parseCSS(property);
+            obj.toValueRaw = property.toString();
+            obj.toValue = parseCSS(obj.toValueRaw);
             if (!animateProperties[easing]) animateProperties[easing] = [];
 
             if (!options.queue) {

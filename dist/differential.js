@@ -876,8 +876,8 @@ function animate(element, properties, options) {
                     return true;
                 }
             }
-            obj.toValueRaw = property;
-            obj.toValue = parseCSS(property);
+            obj.toValueRaw = property.toString();
+            obj.toValue = parseCSS(obj.toValueRaw);
             if (!animateProperties[easing]) animateProperties[easing] = [];
 
             if (!options.queue) {
@@ -1009,7 +1009,7 @@ window.D = function D(element, properties, options, options2, callback) {
                 };
                 if (options2) options.duration = options2
                 if (callback) options.easing = callback;
-            } else {
+            } else if (typeof options === 'number') {
                 options = {
                     duration: options
                 }
