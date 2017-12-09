@@ -18,12 +18,36 @@ window.D = function D(element, properties, options, options2, callback) {
                 if (callback) options.done = callback;
             }
         }
+
+        options = convertOptions(options || {});
         if (Array.isArray(properties)) {
-            return properties.map((p) => {
-                return animate(element, p, options || {});
+            var start = false,
+                done = false;
+            if (options.start) {
+                start = options.start;
+                options.start = function () {};
+            }
+            if (options.done) {
+                done = options.done;
+                options.done = function () {};
+            }
+
+            return properties.map((p, i) => {
+
+                if (start && i === 0) {
+                    var newoptions = convertOptions(options);
+                    newoptions.start = start;
+                    return animate(element, p, newoptions);
+                } else if (done && i === properties.length - 1) {
+                    var newoptions = convertOptions(options);
+                    newoptions.done = done;
+                    return animate(element, p, newoptions);
+                } else {
+                    return animate(element, p, options);
+                }
             });
         } else {
-            return animate(element, properties, options || {});
+            return animate(element, properties, options);
         }
     }
 }
@@ -40,4 +64,27 @@ D.addEase = function (name, easing) {
 
 D.stop = function () {
     Stop = true;
+}
+D.start = function () {
+    Stop = false;
+    run();
+}
+
+D.clear = function () {
+    Queues = {
+        main: {
+            list: [],
+            active: false,
+            parrallel: false
+        },
+        parrallel: {
+            list: [],
+            active: false,
+            parrallel: true
+        }
+    }
+}
+
+HTMLElement.prototype.D = function (properties, options, options2, callback) {
+    return D(this, properties, options, options2, callback)
 }

@@ -18,19 +18,17 @@
         el.style.height = '100px';
 
         function an() {
-            D(el, [{
+            el.D([{
                     backgroundColor: 'red',
                     border: '20px solid rgb(255,255,0)',
                     width: '-=30px',
-                    height: '-=30px',
-                    borderRadius: '10px',
+                    height: '-=30px'
                 },
                 {
                     backgroundColor: 'green',
                     border: '5px solid rgb(255,0,0)',
                     width: '+=30px',
-                    height: '+=30px',
-                    borderRadius: '0px'
+                    height: '+=30px'
                 },
                 {
                     backgroundColor: 'blue',
@@ -54,7 +52,6 @@
 
         }
         an();
-
     </script>
 </body>
 

@@ -1,5 +1,4 @@
 function animate(element, properties, options) {
-    options = convertOptions(options);
     var animateProperties = {};
     for (var name in properties) {
         (function (properties, name) {
@@ -32,7 +31,6 @@ function animate(element, properties, options) {
                     setUnitsCSS(this.originalValue, this.toValue)
                     if (operator) {
                         operateCSS(this.originalValue, this.toValue, operator);
-                        this.toValueRaw = buildCSS(this.toValue);
                     }
                     setDiffCSS(this.originalValue, this.toValue);
                     return true;
@@ -87,7 +85,7 @@ function step(item, diff) {
 function end(item, queueName) {
     for (var easing in item.properties) {
         item.properties[easing].forEach((property) => {
-            setProperty(item.element, property, property.toValueRaw);
+            setProperty(item.element, property, buildCSS(property.toValue));
         });
     }
     var queue = Queues[queueName]

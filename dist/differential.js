@@ -5,7 +5,7 @@
  License: MIT (https://github.com/ThreeLetters/differential.js/blob/master/LICENSE)
  Source: https://github.com/ThreeLetters/differential.js
  Build: v0.0.1
- Built on: 08/12/2017
+ Built on: 09/12/2017
 */
 
 (function (window) {
@@ -607,7 +607,7 @@ function parseCSS(string, obj) {
         obj.push([3, match[1]]);
         parseCSS(match[2], obj);
     } else {
-        var number = string.match(/^([0-9\.]*)(em|ex|%|px|cm|mm|in|pt|pc|ch|rem|vh|vw|vmin|vmax|s|ms)?(?: (.*))?/);
+        var number = string.match(/^([0-9\.]*)(em|ex|%|px|cm|mm|in|pt|pc|ch|rem|vh|vw|vmin|vmax|s|ms|deg|grad|rad|turn|Q)?(?: (.*))?/);
         if (number[1]) { // number
             obj.push([0, parseFloat(number[1]), number[2] || '']);
             parseCSS(number[3], obj);
@@ -759,7 +759,7 @@ function setUnitsCSS(css1, css2) {
         }
         switch (css2[i][0]) {
             case 0: // number
-                if (css2[i][2])
+                if (css2[i][2] && (!css1[i][2] || css2[i][2] !== '%'))
                     css1[i][2] = css2[i][2];
                 break;
             case 1: // function
@@ -777,6 +777,10 @@ function setDiffCSS(css1, css2) {
         if (!css1[i]) throw "Fail";
         switch (css2[i][0]) {
             case 0: // number
+                if (css1[i][2] && css2[i][2] === '%' && css1[i][2] !== '%') {
+                    css2[i][2] = css1[i][2];
+                    css2[i][1] = css1[i][1] * (css2[i][1] / 100);
+                }
                 css1[i][3] = css2[i][1] - css1[i][1];
                 break;
             case 2: // color
@@ -830,13 +834,11 @@ function setCSSFrac(item, property, fraction) {
     }
     recurse(property.originalValue)
     out.pop();
-
     setProperty(item.element, property, out.join(''));
 
 }
 // animate.js
 function animate(element, properties, options) {
-    options = convertOptions(options);
     var animateProperties = {};
     for (var name in properties) {
         (function (properties, name) {
@@ -869,7 +871,6 @@ function animate(element, properties, options) {
                     setUnitsCSS(this.originalValue, this.toValue)
                     if (operator) {
                         operateCSS(this.originalValue, this.toValue, operator);
-                        this.toValueRaw = buildCSS(this.toValue);
                     }
                     setDiffCSS(this.originalValue, this.toValue);
                     return true;
@@ -924,7 +925,7 @@ function step(item, diff) {
 function end(item, queueName) {
     for (var easing in item.properties) {
         item.properties[easing].forEach((property) => {
-            setProperty(item.element, property, property.toValueRaw);
+            setProperty(item.element, property, buildCSS(property.toValue));
         });
     }
     var queue = Queues[queueName]
@@ -1016,12 +1017,36 @@ window.D = function D(element, properties, options, options2, callback) {
                 if (callback) options.done = callback;
             }
         }
+
+        options = convertOptions(options || {});
         if (Array.isArray(properties)) {
-            return properties.map((p) => {
-                return animate(element, p, options || {});
+            var start = false,
+                done = false;
+            if (options.start) {
+                start = options.start;
+                options.start = function () {};
+            }
+            if (options.done) {
+                done = options.done;
+                options.done = function () {};
+            }
+
+            return properties.map((p, i) => {
+
+                if (start && i === 0) {
+                    var newoptions = convertOptions(options);
+                    newoptions.start = start;
+                    return animate(element, p, newoptions);
+                } else if (done && i === properties.length - 1) {
+                    var newoptions = convertOptions(options);
+                    newoptions.done = done;
+                    return animate(element, p, newoptions);
+                } else {
+                    return animate(element, p, options);
+                }
             });
         } else {
-            return animate(element, properties, options || {});
+            return animate(element, properties, options);
         }
     }
 }
@@ -1038,5 +1063,28 @@ D.addEase = function (name, easing) {
 
 D.stop = function () {
     Stop = true;
+}
+D.start = function () {
+    Stop = false;
+    run();
+}
+
+D.clear = function () {
+    Queues = {
+        main: {
+            list: [],
+            active: false,
+            parrallel: false
+        },
+        parrallel: {
+            list: [],
+            active: false,
+            parrallel: true
+        }
+    }
+}
+
+HTMLElement.prototype.D = function (properties, options, options2, callback) {
+    return D(this, properties, options, options2, callback)
 }
 })(window)

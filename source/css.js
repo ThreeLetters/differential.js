@@ -50,7 +50,7 @@ function parseCSS(string, obj) {
         obj.push([3, match[1]]);
         parseCSS(match[2], obj);
     } else {
-        var number = string.match(/^([0-9\.]*)(em|ex|%|px|cm|mm|in|pt|pc|ch|rem|vh|vw|vmin|vmax|s|ms)?(?: (.*))?/);
+        var number = string.match(/^([0-9\.]*)(em|ex|%|px|cm|mm|in|pt|pc|ch|rem|vh|vw|vmin|vmax|s|ms|deg|grad|rad|turn|Q)?(?: (.*))?/);
         if (number[1]) { // number
             obj.push([0, parseFloat(number[1]), number[2] || '']);
             parseCSS(number[3], obj);
@@ -202,7 +202,7 @@ function setUnitsCSS(css1, css2) {
         }
         switch (css2[i][0]) {
             case 0: // number
-                if (css2[i][2])
+                if (css2[i][2] && (!css1[i][2] || css2[i][2] !== '%'))
                     css1[i][2] = css2[i][2];
                 break;
             case 1: // function
@@ -220,6 +220,10 @@ function setDiffCSS(css1, css2) {
         if (!css1[i]) throw "Fail";
         switch (css2[i][0]) {
             case 0: // number
+                if (css1[i][2] && css2[i][2] === '%' && css1[i][2] !== '%') {
+                    css2[i][2] = css1[i][2];
+                    css2[i][1] = css1[i][1] * (css2[i][1] / 100);
+                }
                 css1[i][3] = css2[i][1] - css1[i][1];
                 break;
             case 2: // color
@@ -273,7 +277,6 @@ function setCSSFrac(item, property, fraction) {
     }
     recurse(property.originalValue)
     out.pop();
-
     setProperty(item.element, property, out.join(''));
 
 }
