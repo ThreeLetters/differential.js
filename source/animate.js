@@ -67,7 +67,7 @@ function animate(element, properties, options) {
         }
     };
 
-    if (!options.queue) item.options.start();
+    if (!options.queue) options.start();
     Queues[options.queue ? 'main' : 'parrallel'].list.splice(0, 0, Data);
     Stop = false;
     run();
@@ -91,14 +91,12 @@ function end(item, queueName) {
     }
     var queue = Queues[queueName]
     if (queue.parrallel) {
-        var ind = Queue.list.indexOf(item);
-        Queue.list.splice(ind, 1);
+        var ind = queue.list.indexOf(item);
+        queue.list.splice(ind, 1);
     } else {
         queue.active = false;
     }
-
     item.options.done();
-
 }
 
 
@@ -132,8 +130,8 @@ function run() {
                     Queues[name].active = Queues[name].list.pop();
                     Queues[name].active.options.start();
                     if (!Queues[name].active.init()) {
+                        Queues[name].active.done();
                         Queues[name].active = false;
-                        Queues[name].done();
                     };
                     stop = false;
                 }

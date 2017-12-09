@@ -32,21 +32,31 @@ window.D = function D(element, properties, options, options2, callback) {
                 options.done = function () {};
             }
 
-            return properties.map((p, i) => {
+            var i = 0;
 
+            function loop() {
+                var p = properties[i];
+                if (!p) return;
+                var newoptions = convertOptions(options);
                 if (start && i === 0) {
-                    var newoptions = convertOptions(options);
                     newoptions.start = start;
-                    return animate(element, p, newoptions);
-                } else if (done && i === properties.length - 1) {
-                    var newoptions = convertOptions(options);
-                    newoptions.done = done;
-                    return animate(element, p, newoptions);
-                } else {
-                    return animate(element, p, options);
                 }
-            });
+                newoptions.done = function () {
+                    i++;
+                    if (i === properties.length) {
+                        done();
+                        return;
+                    }
+                    loop();
+                }
+
+                animate(element, p, newoptions);
+
+            }
+
+            loop();
         } else {
+
             return animate(element, properties, options);
         }
     }
