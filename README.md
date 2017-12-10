@@ -7,6 +7,12 @@ D(element,{
     height: '10px'
 });
 ```
+## Features
+
+* Very efficient - Faster than other libraries such as Velocity and JQuery
+* Standalone - No plugins needed
+* Flexible and simple - A tree could use the API
+* Animations for anything! Colors, functions (eg, `calculate(100% - 10px)`), hooks, unit conversions, and more
 
 ## Example
 
