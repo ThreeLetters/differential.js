@@ -23,17 +23,19 @@ function animate(element, properties, options) {
                 originalValueRaw: null,
                 init: function () {
                     this.originalValueRaw = getProperty(element, this);
+
                     if (!this.originalValueRaw || this.originalValueRaw === this.toValueRaw) {
                         setProperty(element, this, this.toValueRaw);
                         return false;
                     }
                     //   console.log(this.originalValueRaw)
                     this.originalValue = parseCSS(this.originalValueRaw);
-                    setUnitsCSS(this.originalValue, this.toValue)
+                    setUnitsCSS(element, this.originalValue, this.toValue)
                     if (operator) {
                         operateCSS(this.originalValue, this.toValue, operator);
                     }
                     setDiffCSS(this.originalValue, this.toValue);
+                    //  console.log(this.originalValue, this.toValue)
                     return true;
                 }
             }
@@ -69,8 +71,7 @@ function animate(element, properties, options) {
 
     if (!options.queue) options.start();
     Queues[options.queue ? 'main' : 'parrallel'].list.splice(0, 0, Data);
-    Stop = false;
-    run();
+    startLoop();
 }
 
 function step(item, diff) {
@@ -99,59 +100,71 @@ function end(item, queueName) {
     item.options.done();
 }
 
+function startLoop() {
+    if (!Running) {
+        Stop = false;
+        timerLoop(false);
+    }
+}
 
-function run() {
-    if (Stop) return;
-    window.requestAnimationFrame(run);
-    let currentTime = Date.now(),
+function timerLoop(animationFrame) {
+    if (Stop) return Running = false;
+    else Running = true;
+    window.requestAnimationFrame(function () {
+        timerLoop(false)
+    });
+    let currentTime = Timer.now(),
         diffTime = currentTime - Now;
 
+
     Now = currentTime;
-    if (diffTime >= 1) {
-        var stop = true;
-        for (var name in Queues) {
-            if (Queues[name].parrallel) {
-                Queues[name].list.forEach((item) => {
-                    if (item.startTime === undefined) {
-                        item.startTime = Now;
-                    } else {
-                        var diff = Now - item.startTime;
+    process();
+}
 
-                        if (diff >= item.duration) {
-                            end(item, name);
-                        } else {
-                            step(item, diff, name);
-                        }
-                    }
-                    stop = false;
-                })
-            } else {
-                if (!Queues[name].active && Queues[name].list.length) {
-                    Queues[name].active = Queues[name].list.pop();
-                    Queues[name].active.options.start();
-                    if (!Queues[name].active.init()) {
-                        Queues[name].active.done();
-                        Queues[name].active = false;
-                    };
-                    stop = false;
-                }
-                var item = Queues[name].active;
-                if (item) {
-                    if (item.startTime === undefined) {
-                        item.startTime = Now;
-                    } else {
-                        var diff = Now - item.startTime;
+function process() {
+    var stop = true;
+    for (var name in Queues) {
+        if (Queues[name].parrallel) {
+            Queues[name].list.forEach((item) => {
+                if (item.startTime === undefined) {
+                    item.startTime = Now;
+                } else {
+                    var diff = Now - item.startTime;
 
-                        if (diff >= item.duration) {
-                            end(item, name);
-                        } else {
-                            step(item, diff, name);
-                        }
+                    if (diff >= item.duration) {
+                        end(item, name);
+                    } else {
+                        step(item, diff, name);
                     }
-                    stop = false;
                 }
+                stop = false;
+            })
+        } else {
+            if (!Queues[name].active && Queues[name].list.length) {
+                Queues[name].active = Queues[name].list.pop();
+                Queues[name].active.options.start();
+                if (!Queues[name].active.init()) {
+                    Queues[name].active.done();
+                    Queues[name].active = false;
+                };
+                stop = false;
+            }
+            var item = Queues[name].active;
+            if (item) {
+                if (item.startTime === undefined) {
+                    item.startTime = Now;
+                } else {
+                    var diff = Now - item.startTime;
+
+                    if (diff >= item.duration) {
+                        end(item, name);
+                    } else {
+                        step(item, diff, name);
+                    }
+                }
+                stop = false;
             }
         }
-        if (stop) Stop = stop;
     }
+    if (stop) Stop = stop;
 }

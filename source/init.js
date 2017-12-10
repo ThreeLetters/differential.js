@@ -11,8 +11,11 @@ var Easings = {},
             parrallel: true
         }
     },
-    Now = Date.now(),
-    Stop = true;
+    Stop = true,
+    Running = false,
+    frameDur = 15;
+var CSSSetHooks = {},
+    CSSGetHooks = {};
 
 function convertOptions(options) {
     return {
@@ -194,3 +197,15 @@ function hexToRgb(hex) {
         parseInt(result[3], 16)
     ] : null;
 }
+
+if (!window.requestAnimationFrame) window.requestAnimationFrame = window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame;
+
+var Timer = (function () {
+    if (window.performance && window.performance.now) {
+        return window.performance;
+    } else {
+        return Date;
+    }
+})();
+
+var Now = Timer.now();

@@ -5,10 +5,10 @@
  License: MIT (https://github.com/ThreeLetters/differential.js/blob/master/LICENSE)
  Source: https://github.com/ThreeLetters/differential.js
  Build: v0.0.1
- Built on: 09/12/2017
+ Built on: 10/12/2017
 */
 
-(function (window) {
+window.D = (function (window) {
 // init.js
 var Easings = {},
     Queues = {
@@ -23,8 +23,11 @@ var Easings = {},
             parrallel: true
         }
     },
-    Now = Date.now(),
-    Stop = true;
+    Stop = true,
+    Running = false,
+    frameDur = 15;
+var CSSSetHooks = {},
+    CSSGetHooks = {};
 
 function convertOptions(options) {
     return {
@@ -206,6 +209,18 @@ function hexToRgb(hex) {
         parseInt(result[3], 16)
     ] : null;
 }
+
+if (!window.requestAnimationFrame) window.requestAnimationFrame = window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame;
+
+var Timer = (function () {
+    if (window.performance && window.performance.now) {
+        return window.performance;
+    } else {
+        return Date;
+    }
+})();
+
+var Now = Timer.now();
 // easings/custom.js
 /*
 Easing bezier curves. Velocity.js
@@ -554,109 +569,7 @@ function generateStep(steps) {
         return Math.round(p * steps) * (1 / steps);
     };
 }
-// css.js
-var CSSSetHooks = {},
-    CSSGetHooks = {};
-
-
-function getProperty(element, propData) {
-    if (CSSGetHooks[propData.nameJS]) return CSSGetHooks[propData.nameJS](element, propData)
-    if (element.style[propData.nameJS]) return element.style[propData.nameJS];
-    var styles = window.getComputedStyle(element);
-    return styles.getPropertyValue(propData.nameCSS);
-}
-
-function setProperty(element, propData, value) {
-    if (CSSSetHooks[propData.nameJS]) {
-        var dt = CSSSetHooks[propData.nameJS](element, propData, value);
-        if (dt) element.style[dt[0]] = dt[1];
-    } else {
-        element.style[propData.nameJS] = value;
-    }
-    return;
-}
-
-function getCssString(property) {
-    return property.replace(/[A-Z]/g, function (a) {
-        return '-' + a.toLowerCase();
-    });
-}
-
-function getJsString(name) {
-
-    return name.split('-').map((n, i) => {
-        if (i !== 0) return capitalizeFirstLetter(n);
-        return n;
-    }).join('');
-}
-
-function capitalizeFirstLetter(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-}
-
-
-function parseCSS(string, obj) {
-    if (!obj) obj = []
-    if (!string) return obj;
-    if (string.charAt(0) === '"') {
-        var match = string.match(/("(?:[^"\\]|\\.)*")(?: (.*))?/);
-        obj.push([3, match[1]]);
-        parseCSS(match[2], obj);
-    } else if (string.charAt(0) === "'") {
-        var match = string.match(/('(?:[^'\\]|\\.)*')(?: (.*))?/);
-        obj.push([3, match[1]]);
-        parseCSS(match[2], obj);
-    } else {
-        var number = string.match(/^([0-9\.]*)(em|ex|%|px|cm|mm|in|pt|pc|ch|rem|vh|vw|vmin|vmax|s|ms|deg|grad|rad|turn|Q)?(?: (.*))?/);
-        if (number[1]) { // number
-            obj.push([0, parseFloat(number[1]), number[2] || '']);
-            parseCSS(number[3], obj);
-        } else {
-            var func = string.match(/^([a-z\-]*?)\(([^\)]*)\)(?: (.*))?/)
-
-            if (func && func[1]) {
-
-                if (func[1] === 'rgb') {
-                    obj.push([2, func[2].split(',').map((arg) => {
-                        return parseInt(arg);
-                    })]);
-                } else {
-                    var args = func[2].split(',').map((arg) => {
-                        return parseCSS(arg);
-                    });
-                    obj.push([1, func[1], args]);
-                }
-                parseCSS(func[3], obj);
-            } else {
-
-                if (string.charAt(0) === '#') {
-                    var results = string.match(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})(?: (.*))?/);
-                    obj.push([2, hexToRgb(results[1])]);
-
-                    parseCSS(results[2], obj);
-                } else {
-                    var res = string.match(/^([a-z\-]*?)(?: (.*))/);
-                    if (res && res[1]) {
-                        if (Colors[res[1]]) {
-                            obj.push([2, Colors[res[1]].slice(0)])
-                        } else {
-                            obj.push([3, res[1]]);
-                        }
-                        parseCSS(res[2], obj);
-                    } else {
-                        if (Colors[string]) {
-                            obj.push([2, Colors[string].slice(0)])
-                        } else {
-                            obj.push([3, string]);
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return obj;
-}
-
+// css/builder.js
 function buildCSS(obj) {
     var out = [];
 
@@ -693,7 +606,84 @@ function buildCSS(obj) {
     out.pop();
     return out.join('')
 }
+// css/converter.js
+var convertUnits = (function () {
 
+    var Map = {};
+    var test = document.createElement("div");
+    test.style.visibility = test.style.overflow = "hidden";
+    var baseline = 150;
+
+    function populateMap() {
+        var Units = ['px', 'in', 'cm', 'mm', 'pt', 'pc'];
+        document.body.appendChild(test);
+        Units.forEach((unit) => {
+            test.style.width = baseline + unit;
+            Map[unit] = baseline / test.offsetWidth;
+        })
+        document.body.removeChild(test)
+    }
+    window.addEventListener('load', function () {
+        populateMap();
+    });
+
+    function converter(element, value, from, to) {
+
+        var fromRatio = Map[from]; // [unit]/px
+        var toRatio = Map[to]; // [unit]/px
+
+        if (!fromRatio || !toRatio) {
+            element.appendChild(test);
+            if (!fromRatio) {
+                test.style.width = baseline + from;
+                fromRatio = baseline / test.offsetWidth;
+            }
+            if (!toRatio) {
+                test.style.width = baseline + to;
+                toRatio = baseline / test.offsetWidth;
+            }
+            element.removeChild(test);
+        }
+        return ((value / fromRatio) * toRatio); // [u1] * 1/([u1]/px) * [u2]/px;
+    }
+    return converter;
+})();
+// css/css.js
+function getProperty(element, propData) {
+    if (CSSGetHooks[propData.nameJS]) return CSSGetHooks[propData.nameJS](element, propData)
+    if (element.style[propData.nameJS]) return element.style[propData.nameJS];
+    var styles = window.getComputedStyle(element);
+    return styles.getPropertyValue(propData.nameCSS);
+}
+
+function setProperty(element, propData, value) {
+    if (CSSSetHooks[propData.nameJS]) {
+        var dt = CSSSetHooks[propData.nameJS](element, propData, value);
+        if (dt) element.style[dt[0]] = dt[1];
+    } else {
+        element.style[propData.nameJS] = value;
+    }
+    return;
+}
+
+function getCssString(property) {
+    return property.replace(/[A-Z]/g, function (a) {
+        return '-' + a.toLowerCase();
+    });
+}
+
+function getJsString(name) {
+
+    return name.split('-').map((n, i) => {
+        if (i !== 0) return capitalizeFirstLetter(n);
+        return n;
+    }).join('');
+}
+
+function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
+// css/manipulator.js
 function operate(value, value2, operator) {
     switch (operator) {
         case '+':
@@ -728,7 +718,7 @@ function operateCSS(css1, css2, operator) {
                 css2[i][1] = operate(css1[i][1], css2[i][1], operator);
                 break;
             case 1: // function
-                css2[i][1].forEach((prop, ind) => {
+                css2[i][2].forEach((prop, ind) => {
                     operateCSS(css1[i][2][ind], css2[i][2][ind], operator);
                 });
                 break;
@@ -750,7 +740,7 @@ function operateCSS(css1, css2, operator) {
     }
 }
 
-function setUnitsCSS(css1, css2) {
+function setUnitsCSS(element, css1, css2) {
     for (var i = 0; i < css2.length; ++i) {
         if (!css1[i]) {
             css1[i] = css2[i].slice(0);
@@ -759,13 +749,26 @@ function setUnitsCSS(css1, css2) {
         }
         switch (css2[i][0]) {
             case 0: // number
-                if (css2[i][2] && (!css1[i][2] || css2[i][2] !== '%'))
-                    css1[i][2] = css2[i][2];
+                if (css2[i][2]) {
+                    if (!css1[i][2]) css1[i][2] = css2[i][2];
+                    else if (css1[i][2] !== css2[i][2]) {
+                        if (css2[i][2] === '%') {
+                            css2[i][2] = css1[i][2];
+                            css2[i][1] = css1[i][1] * (css2[i][1] / 100);
+                        } else {
+
+                            css1[i][1] = convertUnits(element, css1[i][1], css1[i][2], css2[i][2])
+                            css1[i][2] = css2[i][2];
+                        }
+                    }
+
+                }
+                css1[i][2] = css2[i][2];
                 break;
             case 1: // function
-                css2[i][1].forEach((prop, ind) => {
+                css2[i][2].forEach((prop, ind) => {
                     if (!css1[i][2][ind]) css1[i][2][ind] = [];
-                    setUnitsCSS(css1[i][2][ind], css2[i][2][ind]);
+                    setUnitsCSS(element, css1[i][2][ind], css2[i][2][ind]);
                 });
                 break;
         }
@@ -777,10 +780,6 @@ function setDiffCSS(css1, css2) {
         if (!css1[i]) throw "Fail";
         switch (css2[i][0]) {
             case 0: // number
-                if (css1[i][2] && css2[i][2] === '%' && css1[i][2] !== '%') {
-                    css2[i][2] = css1[i][2];
-                    css2[i][1] = css1[i][1] * (css2[i][1] / 100);
-                }
                 css1[i][3] = css2[i][1] - css1[i][1];
                 break;
             case 2: // color
@@ -790,7 +789,7 @@ function setDiffCSS(css1, css2) {
                 })
                 break;
             case 1: // function
-                css2[i][1].forEach((prop, ind) => {
+                css2[i][2].forEach((prop, ind) => {
                     setDiffCSS(css1[i][2][ind], css2[i][2][ind]);
                 });
                 break;
@@ -822,7 +821,7 @@ function setCSSFrac(item, property, fraction) {
                     out.push('rgb(');
                     property[1].forEach((prop, i) => {
                         if (i !== 0) out.push(',');
-                        out.push(parseInt(prop + property[2][i] * fraction));
+                        out.push(Math.floor(prop + property[2][i] * fraction));
                     })
                     out.push(')', ' ');
                     break;
@@ -836,6 +835,110 @@ function setCSSFrac(item, property, fraction) {
     out.pop();
     setProperty(item.element, property, out.join(''));
 
+}
+// css/parser.js
+function splitSafe(str) {
+
+    str = str.split('');
+    var current = [];
+    var out = [];
+    var i = 0;
+    var len = str.length;
+    var char;
+    var level = 0;
+
+    function skip(match) {
+        var backslash = false;
+        for (++i; i < len; i++) {
+            char = str[i];
+            current.push(char);
+            if (char === "\\") backslash = true;
+            else if (char === match && !backslash) {
+                break;
+            } else if (backslash) {
+                backslash = false;
+            }
+        }
+    }
+
+    for (i = 0; i < len; ++i) {
+        char = str[i];
+        current.push(char);
+        if (char === '"' || char === "'") skip(char);
+        else if (char === '(') {
+            level++;
+        } else if (char === ')') {
+            level--;
+            if (level < 0) throw 'Fail';
+        } else if (level === 0 && char === ',') {
+            out.push(current.join(''))
+            current = [];
+        }
+    }
+    if (current.length) out.push(current.join(''))
+    return out;
+}
+
+function parseCSS(string, obj) {
+    if (!obj) obj = []
+    if (!string) return obj;
+    if (string.charAt(0) === '"') {
+        var match = string.match(/("(?:[^"\\]|\\.)*")(?: (.*))?/);
+        obj.push([3, match[1]]);
+        parseCSS(match[2], obj);
+    } else if (string.charAt(0) === "'") {
+        var match = string.match(/('(?:[^'\\]|\\.)*')(?: (.*))?/);
+        obj.push([3, match[1]]);
+        parseCSS(match[2], obj);
+    } else {
+        var number = string.match(/^([0-9\.]*)(em|ex|%|px|cm|mm|in|pt|pc|ch|rem|vh|vw|vmin|vmax|s|ms|deg|grad|rad|turn|Q)?(?: (.*))?/);
+        if (number[1]) { // number
+            obj.push([0, parseFloat(number[1]), number[2] || '']);
+            parseCSS(number[3], obj);
+        } else {
+            var func = string.match(/^([a-z\-]*?)\(([^\)]*)\)(?: (.*))?/)
+
+            if (func && func[1]) {
+
+                if (func[1] === 'rgb') {
+                    obj.push([2, splitSafe(func[2]).map((arg) => {
+                        return parseInt(arg);
+                    })]);
+                } else {
+                    var args = splitSafe(func[2]).map((arg) => {
+                        return parseCSS(arg);
+                    });
+                    obj.push([1, func[1], args]);
+                }
+                parseCSS(func[3], obj);
+            } else {
+
+                if (string.charAt(0) === '#') {
+                    var results = string.match(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})(?: (.*))?/);
+                    obj.push([2, hexToRgb(results[1])]);
+
+                    parseCSS(results[2], obj);
+                } else {
+                    var res = string.match(/^([a-z\-]*?)(?: (.*))/);
+                    if (res && res[1]) {
+                        if (Colors[res[1]]) {
+                            obj.push([2, Colors[res[1]].slice(0)])
+                        } else {
+                            obj.push([3, res[1]]);
+                        }
+                        parseCSS(res[2], obj);
+                    } else {
+                        if (Colors[string]) {
+                            obj.push([2, Colors[string].slice(0)])
+                        } else {
+                            obj.push([3, string]);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return obj;
 }
 // animate.js
 function animate(element, properties, options) {
@@ -863,17 +966,19 @@ function animate(element, properties, options) {
                 originalValueRaw: null,
                 init: function () {
                     this.originalValueRaw = getProperty(element, this);
+
                     if (!this.originalValueRaw || this.originalValueRaw === this.toValueRaw) {
                         setProperty(element, this, this.toValueRaw);
                         return false;
                     }
                     //   console.log(this.originalValueRaw)
                     this.originalValue = parseCSS(this.originalValueRaw);
-                    setUnitsCSS(this.originalValue, this.toValue)
+                    setUnitsCSS(element, this.originalValue, this.toValue)
                     if (operator) {
                         operateCSS(this.originalValue, this.toValue, operator);
                     }
                     setDiffCSS(this.originalValue, this.toValue);
+                    //  console.log(this.originalValue, this.toValue)
                     return true;
                 }
             }
@@ -909,8 +1014,7 @@ function animate(element, properties, options) {
 
     if (!options.queue) options.start();
     Queues[options.queue ? 'main' : 'parrallel'].list.splice(0, 0, Data);
-    Stop = false;
-    run();
+    startLoop();
 }
 
 function step(item, diff) {
@@ -939,64 +1043,76 @@ function end(item, queueName) {
     item.options.done();
 }
 
-
-function run() {
-    if (Stop) return;
-    window.requestAnimationFrame(run);
-    let currentTime = Date.now(),
-        diffTime = currentTime - Now;
-
-    Now = currentTime;
-    if (diffTime >= 1) {
-        var stop = true;
-        for (var name in Queues) {
-            if (Queues[name].parrallel) {
-                Queues[name].list.forEach((item) => {
-                    if (item.startTime === undefined) {
-                        item.startTime = Now;
-                    } else {
-                        var diff = Now - item.startTime;
-
-                        if (diff >= item.duration) {
-                            end(item, name);
-                        } else {
-                            step(item, diff, name);
-                        }
-                    }
-                    stop = false;
-                })
-            } else {
-                if (!Queues[name].active && Queues[name].list.length) {
-                    Queues[name].active = Queues[name].list.pop();
-                    Queues[name].active.options.start();
-                    if (!Queues[name].active.init()) {
-                        Queues[name].active.done();
-                        Queues[name].active = false;
-                    };
-                    stop = false;
-                }
-                var item = Queues[name].active;
-                if (item) {
-                    if (item.startTime === undefined) {
-                        item.startTime = Now;
-                    } else {
-                        var diff = Now - item.startTime;
-
-                        if (diff >= item.duration) {
-                            end(item, name);
-                        } else {
-                            step(item, diff, name);
-                        }
-                    }
-                    stop = false;
-                }
-            }
-        }
-        if (stop) Stop = stop;
+function startLoop() {
+    if (!Running) {
+        Stop = false;
+        timerLoop(false);
     }
 }
+
+function timerLoop(animationFrame) {
+    if (Stop) return Running = false;
+    else Running = true;
+    window.requestAnimationFrame(function () {
+        timerLoop(false)
+    });
+    let currentTime = Timer.now(),
+        diffTime = currentTime - Now;
+
+
+    Now = currentTime;
+    process();
+}
+
+function process() {
+    var stop = true;
+    for (var name in Queues) {
+        if (Queues[name].parrallel) {
+            Queues[name].list.forEach((item) => {
+                if (item.startTime === undefined) {
+                    item.startTime = Now;
+                } else {
+                    var diff = Now - item.startTime;
+
+                    if (diff >= item.duration) {
+                        end(item, name);
+                    } else {
+                        step(item, diff, name);
+                    }
+                }
+                stop = false;
+            })
+        } else {
+            if (!Queues[name].active && Queues[name].list.length) {
+                Queues[name].active = Queues[name].list.pop();
+                Queues[name].active.options.start();
+                if (!Queues[name].active.init()) {
+                    Queues[name].active.done();
+                    Queues[name].active = false;
+                };
+                stop = false;
+            }
+            var item = Queues[name].active;
+            if (item) {
+                if (item.startTime === undefined) {
+                    item.startTime = Now;
+                } else {
+                    var diff = Now - item.startTime;
+
+                    if (diff >= item.duration) {
+                        end(item, name);
+                    } else {
+                        step(item, diff, name);
+                    }
+                }
+                stop = false;
+            }
+        }
+    }
+    if (stop) Stop = stop;
+}
 // index.js
-window.D = function D(element, properties, options, options2, callback) {
+function D(element, properties, options, options2, callback) {
 
     if (typeof element === 'string') {
         return D[element].apply(Array.from(arguments).slice(1));
@@ -1074,8 +1190,11 @@ D.stop = function () {
     Stop = true;
 }
 D.start = function () {
-    Stop = false;
-    run();
+    startLoop();
+}
+
+D.fps = function (value) {
+    if (value) frameDur
 }
 
 D.clear = function () {
@@ -1096,4 +1215,6 @@ D.clear = function () {
 HTMLElement.prototype.D = function (properties, options, options2, callback) {
     return D(this, properties, options, options2, callback)
 }
+
+return D;
 })(window)

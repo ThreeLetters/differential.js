@@ -1,7 +1,7 @@
 var files = [
     'init.js',
     'easings/*.js',
-    'css.js',
+    'css/*.js',
     'animate.js',
     'index.js',
 ];
@@ -179,7 +179,7 @@ if (dev) {
     var out = files.join('');
 
 } else {
-    var out = '(function (window) {\n' + files.join('') + '})(window)';
+    var out = 'window.D = (function (window) {\n' + files.join('') + '})(window)';
 }
 var version = "0.0.1";
 var today = new Date();

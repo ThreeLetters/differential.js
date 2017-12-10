@@ -1,4 +1,4 @@
-window.D = function D(element, properties, options, options2, callback) {
+function D(element, properties, options, options2, callback) {
 
     if (typeof element === 'string') {
         return D[element].apply(Array.from(arguments).slice(1));
@@ -76,8 +76,11 @@ D.stop = function () {
     Stop = true;
 }
 D.start = function () {
-    Stop = false;
-    run();
+    startLoop();
+}
+
+D.fps = function (value) {
+    if (value) frameDur
 }
 
 D.clear = function () {
@@ -98,3 +101,5 @@ D.clear = function () {
 HTMLElement.prototype.D = function (properties, options, options2, callback) {
     return D(this, properties, options, options2, callback)
 }
+
+return D;
