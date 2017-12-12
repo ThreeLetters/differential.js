@@ -79,10 +79,6 @@ D.start = function () {
     startLoop();
 }
 
-D.fps = function (value) {
-    if (value) frameDur
-}
-
 D.clear = function () {
     Queues = {
         main: {

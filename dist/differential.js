@@ -5,7 +5,7 @@
  License: MIT (https://github.com/ThreeLetters/differential.js/blob/master/LICENSE)
  Source: https://github.com/ThreeLetters/differential.js
  Build: v0.0.1
- Built on: 10/12/2017
+ Built on: 12/12/2017
 */
 
 window.D = (function (window) {
@@ -1191,10 +1191,6 @@ D.stop = function () {
 }
 D.start = function () {
     startLoop();
-}
-
-D.fps = function (value) {
-    if (value) frameDur
 }
 
 D.clear = function () {

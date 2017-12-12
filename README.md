@@ -1,4 +1,5 @@
-# differential.js
+![Differential.js](https://user-images.githubusercontent.com/13282284/33913824-6f3867e6-df69-11e7-9a70-a35a1225ac26.png)
+
 JS HTML Animations made easy.
 
 ```js
@@ -110,6 +111,18 @@ The properties object can be an an object or an array of objects.
     padding: '120%', // If the original value is not %, then it will be automatically relative, multiplying the original by %/100.
 }
 ```
+
+### Functions
+
+There are some side-functions in Differential.js. To call them, either do `D(funcname,arg1,arg2...)` or `D.funcname(arg1,arg2...)`.
+
+
+Available functions
+
+* `addEase(name, easing)` - Adds an easing. Note than the `easing` argument can be a function or an array. An array of 4 items is automatically converted to a Bezier function
+* `stop()` - Stops animations. Can be resumed via `start()`
+* `start()` - Restarts animations.
+* `clear()` - Clear all animations including pooled.
 
 ### Multiple-elements
 
