@@ -5,7 +5,7 @@
  License: MIT (https://github.com/ThreeLetters/differential.js/blob/master/LICENSE)
  Source: https://github.com/ThreeLetters/differential.js
  Build: v0.0.1
- Built on: 12/12/2017
+ Built on: 18/12/2017
 */
 
 window.D = (function (window) {
@@ -742,7 +742,7 @@ function operateCSS(css1, css2, operator) {
 
 function setUnitsCSS(element, css1, css2) {
     for (var i = 0; i < css2.length; ++i) {
-        if (!css1[i]) {
+        if (!css1[i] || css1[i][0] !== css2[i][0]) {
             css1[i] = css2[i].slice(0);
             css1[i].push(false)
             continue;
@@ -756,7 +756,6 @@ function setUnitsCSS(element, css1, css2) {
                             css2[i][2] = css1[i][2];
                             css2[i][1] = css1[i][1] * (css2[i][1] / 100);
                         } else {
-
                             css1[i][1] = convertUnits(element, css1[i][1], css1[i][2], css2[i][2])
                             css1[i][2] = css2[i][2];
                         }
@@ -871,6 +870,7 @@ function splitSafe(str) {
             level--;
             if (level < 0) throw 'Fail';
         } else if (level === 0 && char === ',') {
+            current.pop();
             out.push(current.join(''))
             current = [];
         }
@@ -906,7 +906,7 @@ function parseCSS(string, obj) {
                     })]);
                 } else {
                     var args = splitSafe(func[2]).map((arg) => {
-                        return parseCSS(arg);
+                        return parseCSS(arg.trim());
                     });
                     obj.push([1, func[1], args]);
                 }
@@ -978,7 +978,7 @@ function animate(element, properties, options) {
                         operateCSS(this.originalValue, this.toValue, operator);
                     }
                     setDiffCSS(this.originalValue, this.toValue);
-                    //  console.log(this.originalValue, this.toValue)
+                    //console.log(this.originalValue, this.toValue)
                     return true;
                 }
             }

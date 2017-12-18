@@ -56,7 +56,7 @@ function operateCSS(css1, css2, operator) {
 
 function setUnitsCSS(element, css1, css2) {
     for (var i = 0; i < css2.length; ++i) {
-        if (!css1[i]) {
+        if (!css1[i] || css1[i][0] !== css2[i][0]) {
             css1[i] = css2[i].slice(0);
             css1[i].push(false)
             continue;
@@ -70,7 +70,6 @@ function setUnitsCSS(element, css1, css2) {
                             css2[i][2] = css1[i][2];
                             css2[i][1] = css1[i][1] * (css2[i][1] / 100);
                         } else {
-
                             css1[i][1] = convertUnits(element, css1[i][1], css1[i][2], css2[i][2])
                             css1[i][2] = css2[i][2];
                         }

@@ -35,7 +35,7 @@ function animate(element, properties, options) {
                         operateCSS(this.originalValue, this.toValue, operator);
                     }
                     setDiffCSS(this.originalValue, this.toValue);
-                    //  console.log(this.originalValue, this.toValue)
+                    //console.log(this.originalValue, this.toValue)
                     return true;
                 }
             }

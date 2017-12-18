@@ -32,6 +32,7 @@ function splitSafe(str) {
             level--;
             if (level < 0) throw 'Fail';
         } else if (level === 0 && char === ',') {
+            current.pop();
             out.push(current.join(''))
             current = [];
         }
@@ -67,7 +68,7 @@ function parseCSS(string, obj) {
                     })]);
                 } else {
                     var args = splitSafe(func[2]).map((arg) => {
-                        return parseCSS(arg);
+                        return parseCSS(arg.trim());
                     });
                     obj.push([1, func[1], args]);
                 }
