@@ -4,8 +4,8 @@
  Author: Andrews54757
  License: MIT (https://github.com/ThreeLetters/differential.js/blob/master/LICENSE)
  Source: https://github.com/ThreeLetters/differential.js
- Build: v0.0.1
- Built on: 18/12/2017
+ Build: v0.0.2
+ Built on: 05/07/2018
 */
 
 window.D = (function (window) {
@@ -891,7 +891,7 @@ function parseCSS(string, obj) {
         obj.push([3, match[1]]);
         parseCSS(match[2], obj);
     } else {
-        var number = string.match(/^([0-9\.]*)(em|ex|%|px|cm|mm|in|pt|pc|ch|rem|vh|vw|vmin|vmax|s|ms|deg|grad|rad|turn|Q)?(?: (.*))?/);
+        var number = string.match(/^(\-?[0-9\.]*)(em|ex|%|px|cm|mm|in|pt|pc|ch|rem|vh|vw|vmin|vmax|s|ms|deg|grad|rad|turn|Q)?(?: (.*))?/);
         if (number[1]) { // number
             obj.push([0, parseFloat(number[1]), number[2] || '']);
             parseCSS(number[3], obj);

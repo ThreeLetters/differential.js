@@ -181,7 +181,7 @@ if (dev) {
 } else {
     var out = 'window.D = (function (window) {\n' + files.join('') + '})(window)';
 }
-var version = "0.0.1";
+var version = "0.0.2";
 var today = new Date();
 var dd = today.getDate();
 var mm = today.getMonth() + 1; //January is 0!
