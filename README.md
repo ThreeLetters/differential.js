@@ -100,7 +100,7 @@ D(element,{
 
 ### Properties Object
 
-The properties object can be an an object or an array of objects.
+The properties object can be an object or an array of objects.
 
 ```js
 {
